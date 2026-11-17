@@ -1,29 +1,60 @@
 # CareerForge
 
-CareerForge is a working Phase 1 web app for preparing and tracking job applications. The local edition uses Node.js 24 and SQLite. The private hosted edition uses ChatGPT sign-in and D1.
+CareerForge is a local-first job-application workspace. The server is a small
+Node.js HTTP application backed by SQLite, with support for account sessions,
+workspace state, résumé imports, and opportunity extraction.
+
+## Requirements
+
+- Node.js 24 or newer
+- Python 3 with `pypdf` for PDF résumé imports
+
+Install the optional PDF dependency with:
+
+```bash
+python -m pip install pypdf
+```
 
 ## Run locally
 
-1. Install Node.js 24 or newer.
-2. Extract this folder and open a terminal in it.
-3. Run `node server.mjs`.
-4. Open [CareerForge](http://127.0.0.1:4310) in your browser.
+Start the server from the repository root:
 
-The app opens with a sample workspace. Create an account for a separate workspace with data saved on this computer. The app binds to loopback, and keeps account and workspace data in the `data` folder. Use Settings to export or delete your workspace data.
+```bash
+node server.mjs
+```
 
-## Try the workflow
+Then open <http://127.0.0.1:4310>.
 
-1. Add career details in **My Career Profile**, or import a résumé and review the extracted fields.
-2. In **Opportunity Analyzer**, paste a job description or enter a supported public job URL. The app highlights recognized skills and gaps using your saved profile.
-3. Generate a résumé or cover letter. Use **Document Studio** to edit drafts, review prior revisions, and export PDF or DOCX.
-4. Save the opportunity to **Application Tracker**, then add a deadline and update its status.
-5. Use **Career Assistant** for profile, skills, and tracking guidance based on the current workspace.
+The server listens on loopback only. User accounts and workspace data are
+stored in `data/careerforge.sqlite`, which is created automatically when the
+server starts. Set `PORT` to use another local port:
 
-## Current implementation
+```bash
+PORT=4400 node server.mjs
+```
 
-- Drafts, matching, import field suggestions, and the career assistant use local rules and templates. They do not call a language-model API. Review imported data and drafts before using them.
-- DOCX and TXT imports are available locally and on the hosted edition. Local PDF import needs Python with `pypdf`. Scanned PDFs need OCR before import. URL extraction is local and supports publicly accessible HTTPS postings with structured JobPosting data. Pasting descriptions works in either edition. DOCX export preserves scripts that the built-in PDF font cannot render.
-- The hosted edition uses ChatGPT sign-in for its private workspace. The local edition has email/password accounts without email verification or recovery mail. The current storage and server stack is lightweight for this release.
-- Scholarship workflows, browser extension, interview preparation, opportunity discovery, and advanced analytics are later roadmap items.
+To use a different SQLite file, set `CAREERFORGE_DB`:
 
-For PDF import with Python, run `python -m pip install pypdf`. For supported public links that decline automated access, paste the posting text.
+```bash
+CAREERFORGE_DB=/path/to/careerforge.sqlite node server.mjs
+```
+
+## Local data and security
+
+- The local server is intended for development and personal use.
+- Account passwords are stored as derived hashes; session cookies are
+  HTTP-only and same-site.
+- Export or delete workspace data from the application before removing the
+  database file.
+- Do not expose the server directly to the public internet.
+
+## Current repository status
+
+This checkout contains the server runner and its README. The server expects
+the compiled frontend in `dist/` and the résumé/opportunity helper modules
+referenced by `server.mjs`; those files must be present before the application
+can be started successfully.
+
+The server exposes endpoints under `/api/v1/` for authentication, workspace
+state, résumé import, and opportunity extraction. Keep the frontend and helper
+modules in sync with those routes when completing the application.
